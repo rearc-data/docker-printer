@@ -1,0 +1,13 @@
+# syntax = docker/dockerfile:1.2
+
+{% block pre_init %}{% endblock %}
+
+{% block image_args -%}
+{% for arg, default in image_arguments.items() -%}
+ARG {{ arg }}{% if default %}={{ default }}{% endif %}
+{% endfor %}
+{%- endblock %}
+
+{% for chunk in chunks %}
+{{ chunk }}
+{% endfor %}

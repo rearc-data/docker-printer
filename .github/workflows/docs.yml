@@ -1,0 +1,18 @@
+# Copied almost verbatim from https://github.com/marketplace/actions/sphinx-build
+name: sphinx
+on:
+  - push
+
+jobs:
+  docs_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: DocumentationHTML
+          path: docs/_build/html/

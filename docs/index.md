@@ -1,0 +1,81 @@
+# Docker-Printer
+
+`docker-printer` is a CLI for easily managing multistep and branching dockerfiles.
+
+```{toctree}
+---
+maxdepth: 1
+caption: Index
+---
+
+templates
+modules
+targets
+builds
+synth
+```
+
+Regular multi-stage dockerfiles and `docker build` commands are incredibly powerful and useful; however, they are designed for building a single image. Multistage builds can be used to define multiple related images, but this quickly results in complicated dockerfiles, possibly duplicated instructions, and complicated collections of build commands.
+
+`docker-printer` addresses this in two main ways:
+- By allowing dockerfiles to be composed from re-usable modules.
+- By building bake files for use by `docker buildx bake` that consolidate the build processes of multiple images in multiple environments into a single configuration file.
+
+## Example
+
+Consider trying to build two related Python images with just a few dependencies or files differing between the two, then both a development and production version of each. You might have something like the following:
+
+```dockerfile
+FROM python:latest AS base
+COPY requirements.txt /requirements.txt
+RUN pip install -r requirements.txt
+
+FROM base AS dev_matplotlib
+RUN pip install matplotlib
+
+FROM base AS dev_plotly
+RUN pip install plotly
+
+FROM dev_matplotlib AS prod_matplotlib
+WORKDIR /app
+COPY app /app
+CMD ['flask', '/app/app.py']
+
+FROM dev_plotly AS prod_plotly
+WORKDIR /app
+COPY app /app
+CMD ['flask', '/app/app.py']
+```
+
+And you now need to manage at least four different build commands, one for each target. Additionally, if this begins to branch beyond just a couple of variations, the dockerfile can quickly get unwieldy, and the code duplication can quickly get problematic.
+
+Existing solutions include:
+- Using Docker Compose to point at each build target, consolidating the build command into a single compose file.
+- Consolidating re-used setup commands into a bash file, and executing that in each duplicate stage
+- Writing scripts for developers that enumerate all the build commands
+
+Docker Printer provides another option that relies on nothing more than multistage builds and, if desired, `docker buildx`, while providing no-duplication, high-speed, templatable, branching, and self-arranging dockerfiles. It also provides an easy way to share best practices for accomplishing common tasks in a dockerfile, such as how to cache downloads while installing packages with `apt-get` or `pip`.
+
+# Getting Started
+
+To get started, install `docker-printer`:
+
+```
+pip install docker-printer
+```
+
+Then initialize the printer configuration in your repository:
+
+```
+docker-printer init
+```
+
+This will create the folders and files necessary to use `docker-printer`.
+
+Next, you'll define the following for your particular dockerfile needs:
+- Define [templates](Templates), which are Jinja2 template files that represent stages (or parts of stages) in your build process.
+- Define [modules](Modules), which populate templates to represent a particular re-usable stage in a dockerfile.
+- Specify your final desired [targets](Targets), which define the output images from your dockerfile.
+- Define one or more [build configurations](Builds) that describe which targets will be built and where they'll be stored
+
+Once you have your definitions laid out, you can [synthesize](Synthesize) your final Dockerfile and, if desired, your bake files.

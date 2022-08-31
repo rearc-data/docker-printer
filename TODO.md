@@ -1,0 +1,2 @@
+- Add `setup` feature for modules
+- Add build profiles to control the generation of the bakefile(s)
