@@ -3,6 +3,8 @@
 
 While a synthesized dockerfile may have many stages, only some represent final stages for images you care about. Target definitions are how we specify the final stages we care about, and from there `docker-printer` can figure out how to create the dockerfile necessary to produce that stage.
 
+Targets must be defined in `docker-printer/targets.yml` or `docker-printer/targets.yml.jinja2`.
+
 ## Example
 
 In your `docker-printer/` folder, define a `targets.yml` file. It will be a list of targets, each of which looks like the following:
@@ -67,6 +69,18 @@ Targets can be excluded from being directly built if they merely represent a com
     - base
   modules:
     - mod5
+```
+
+### Templating
+
+The targets file can also be written as a jinja2 template by simply renaming it `targets.yml.jinja2`:
+
+```yaml+jinja
+{% for i in [1,2,3] %}
+- name: dev{{i}}
+  tags:
+    - dev
+{% endfor %}
 ```
 
 ## `targets.yml` Schema

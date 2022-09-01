@@ -58,7 +58,7 @@ class CommonListTree:
 
 
 class FilledTemplate(BaseModel):
-    file: str = "chunk.Dockerfile.jinja2"
+    file: str = "stage.Dockerfile.jinja2"
     variables: Dict[str, Any] = {}
 
     def render(self, environment: jinja2.Environment):
@@ -251,7 +251,7 @@ class TargetCollection(BaseModel):
         for target in targets:
             if target.name not in names.values():
                 chunks[target.name] = environment.get_template(
-                    "chunk.Dockerfile.jinja2"
+                    "stage.Dockerfile.jinja2"
                 ).render(
                     base=last_chunk_per_target[target.name],
                     name=target.name,
@@ -270,12 +270,17 @@ class TargetCollection(BaseModel):
 
 class BuildConfig(BaseModel):
     name: str
-    image: str
+    image: List[str]
     tag_prefix: Optional[str]
     tag_postfix: Optional[str]
-    platforms: List[str] = ["linux/amd64"]
     build_args: Dict[str, Any] = {"load": True}
     limit_tags: List[str] = []
+
+    @validator("image", pre=True)
+    def ensure_image_is_list(cls, v):
+        if not isinstance(v, list):
+            return [v]
+        return v
 
     def generate_bakefile(self, target_collection: TargetCollection):
         def tag_maker(name):
@@ -293,8 +298,7 @@ class BuildConfig(BaseModel):
                 target={
                     target.name: dict(
                         dockerfile="Dockerfile.synth",
-                        tags=[f"{self.image}:{tag_maker(target.name)}"],
-                        platforms=self.platforms,
+                        tags=[f"{img}:{tag_maker(target.name)}" for img in self.image],
                         target=target.name,
                         **self.build_args,
                     )
