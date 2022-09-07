@@ -31,5 +31,5 @@ ENTRYPOINT {{ entrypoint }}
 {%- endif %}
 
 {% if command -%}
-CMD {{ command }}
+CMD {{ command|tojson|safe }}
 {%- endif %}

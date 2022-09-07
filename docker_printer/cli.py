@@ -35,12 +35,14 @@ def _synth():
     dockerfile_path = Path("Dockerfile.synth")
 
     click.echo(f"Saving to {dockerfile_path}")
-    dockerfile_path.write_text(dockerfile)
+    with open(dockerfile_path, "w", newline="\n") as f:
+        f.write(dockerfile)
 
     for build_config in build_configs.__root__:
         bakefile_path = Path(f"docker-bake.{build_config.name}.json")
         bakefile = build_config.generate_bakefile(targets)
-        bakefile_path.write_text(bakefile)
+        with open(bakefile_path, "w", newline="\n") as f:
+            f.write(bakefile)
         click.echo(build_config.build_command)
 
     return targets, build_configs

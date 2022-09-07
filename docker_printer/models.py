@@ -211,7 +211,7 @@ class TargetCollection(BaseModel):
     def render_dockerfile(
         self, environment: jinja2.Environment, targets: List[str] = ()
     ):
-        targets = self.targets
+        targets = sorted(self.targets, key=lambda t: t.name)
 
         pre_image_args = dict()
         for target in targets:
@@ -282,13 +282,27 @@ class BuildConfig(BaseModel):
             return [v]
         return v
 
+    def _render_build_args(self, target: Target, args):
+        if isinstance(args, list):
+            return [self._render_build_args(target, a) for a in args]
+        elif isinstance(args, dict):
+            return {k: self._render_build_args(target, v) for k, v in args.items()}
+        elif isinstance(args, str):
+            for k, v in {
+                "${TARGET}": target.name,
+            }.items():
+                args = args.replace(k, v)
+            return args
+        else:
+            return args
+
     def generate_bakefile(self, target_collection: TargetCollection):
         def tag_maker(name):
             return "-".join(v for v in [self.tag_prefix, name, self.tag_postfix] if v)
 
         targets = [
             t
-            for t in target_collection.targets
+            for t in sorted(target_collection.targets, key=lambda t: t.name)
             if all(tag in t.tags for tag in self.limit_tags)
         ]
 
@@ -300,7 +314,7 @@ class BuildConfig(BaseModel):
                         dockerfile="Dockerfile.synth",
                         tags=[f"{img}:{tag_maker(target.name)}" for img in self.image],
                         target=target.name,
-                        **self.build_args,
+                        **self._render_build_args(target, self.build_args),
                     )
                     for target in targets
                 },
