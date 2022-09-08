@@ -1,5 +1,6 @@
 import getpass
 import platform
+from functools import lru_cache
 from pathlib import Path
 
 import jinja2
@@ -10,8 +11,24 @@ from yaml.scanner import ScannerError
 from .models import Module
 
 
-def config_dir() -> Path:
-    return Path() / "docker-printer"
+@lru_cache(maxsize=None)
+def base_dir(default_to_local=False) -> Path:
+    root_dir = Path().resolve()
+    while not (root_dir / "docker-printer").exists():
+        if root_dir == root_dir.parent:
+            if default_to_local:
+                return Path().resolve()
+            raise RuntimeError(
+                "Must run `docker-printer` from a folder that contains a folder "
+                "named `docker-printer` (or any subfolder of that top-level directory)"
+            )
+        root_dir = root_dir.parent
+    return root_dir
+
+
+@lru_cache(maxsize=None)
+def config_dir(default_to_local=False) -> Path:
+    return base_dir(default_to_local=default_to_local) / "docker-printer"
 
 
 def base_resources_dir() -> Path:

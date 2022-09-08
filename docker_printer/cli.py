@@ -1,10 +1,8 @@
-import shutil
 import subprocess
-from pathlib import Path
 
 import click
 
-from .models import TargetCollection, BuildConfig, BuildConfigCollection
+from .models import TargetCollection, BuildConfigCollection
 from .utils import (
     config_dir,
     jinja_env,
@@ -12,6 +10,7 @@ from .utils import (
     preload_modules,
     targets_file,
     builds_file,
+    base_dir,
 )
 
 
@@ -32,17 +31,17 @@ def _synth():
     build_configs = BuildConfigCollection.parse_obj(yml_load(builds_file()))
 
     dockerfile = targets.render_dockerfile(jinja_env())
-    dockerfile_path = Path("Dockerfile.synth")
+    dockerfile_path = base_dir() / "Dockerfile.synth"
 
     click.echo(f"Saving to {dockerfile_path}")
     with open(dockerfile_path, "w", newline="\n") as f:
         f.write(dockerfile)
 
     for build_config in build_configs.__root__:
-        bakefile_path = Path(f"docker-bake.{build_config.name}.json")
+        bakefile_path = base_dir() / f"docker-bake.{build_config.name}.json"
         bakefile = build_config.generate_bakefile(targets)
         with open(bakefile_path, "w", newline="\n") as f:
-            f.write(bakefile)
+            f.write(bakefile + "\n")
         click.echo(build_config.build_command)
 
     return targets, build_configs
@@ -63,7 +62,7 @@ def build(name):
 
 @cli.command()
 def init():
-    base_dir = config_dir()
+    base_dir = config_dir(default_to_local=True)
     if base_dir.exists():
         click.echo(f"{base_dir} already exists, cannot initialize new project")
         raise click.Abort()
