@@ -1,0 +1,33 @@
+# Copied almost verbatim from https://github.com/marketplace/actions/sphinx-build
+name: test_examples
+on:
+  - push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.7', '3.8', '3.9', '3.10' ]
+    name: Python ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          pip install -e .
+
+      - name: Test FastAPI Example
+        run: |
+          cd examples/fastapi_app
+          docker-printer synth
+          git diff --shortstat --output=diff.txt .
+          if [ -s diff.txt ]; then
+            cat diff.txt;
+            exit 1;
+          else
+            echo "No differences detected";
+          fi
