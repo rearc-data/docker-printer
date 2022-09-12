@@ -82,3 +82,10 @@ def init(path):
             """.lstrip()
         )
     )
+
+
+@cli.command()
+def version():
+    from . import __version__
+
+    print(__version__)
