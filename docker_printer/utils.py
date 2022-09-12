@@ -2,9 +2,10 @@ import getpass
 import platform
 from functools import lru_cache
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import jinja2
-import pkg_resources
+from importlib import resources
 import yaml
 from yaml.scanner import ScannerError
 
@@ -32,7 +33,8 @@ def config_dir(default_to_local=False) -> Path:
 
 
 def base_resources_dir() -> Path:
-    return Path(pkg_resources.resource_filename(__name__, "resources"))
+    with resources.path("docker_printer", "resources") as resources_dir:
+        return resources_dir
 
 
 def jinja_env():
