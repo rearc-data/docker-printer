@@ -1,0 +1,13 @@
+name: base
+priority: 100
+template:
+  variables:
+    base: tiangolo/uvicorn-gunicorn-fastapi:python${PYTHON_VERSION}-${BASE_OS}
+    env:
+      APP_DIR: /app
+    instructions:
+      - RUN mkdir -p ${APP_DIR}
+      - WORKDIR ${APP_DIR}
+image_args:
+  PYTHON_VERSION: 3.9
+  BASE_OS: slim

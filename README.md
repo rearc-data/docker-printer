@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/docker-printer/badge/?version=latest)](https://docker-printer.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/docker-printer/badge/?version=latest)](https://docker-printer.readthedocs.io/en/latest/?badge=latest) ![PyPI](https://img.shields.io/pypi/v/docker-printer)
 
 # Docker-Printer
 
@@ -12,4 +12,11 @@ Regular multi-stage dockerfiles and `docker build` commands are incredibly power
 
 # Getting Started and Documentation
 
+```
+pip install docker-printer
+docker-printer init
+```
+
 See the [documentation](https://docker-printer.readthedocs.io/en/latest/#) for how to get started.
+
+There are also example docker constructs provided in the `/examples` folder.

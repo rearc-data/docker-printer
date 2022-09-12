@@ -1,0 +1,38 @@
+{
+  "group": {
+    "default": {
+      "targets": [
+        "dev",
+        "prod"
+      ]
+    }
+  },
+  "target": {
+    "dev": {
+      "dockerfile": "Dockerfile.synth",
+      "tags": [
+        "my_app:dev"
+      ],
+      "target": "dev",
+      "cache-from": [
+        "type=docker"
+      ],
+      "output": [
+        "type=docker"
+      ]
+    },
+    "prod": {
+      "dockerfile": "Dockerfile.synth",
+      "tags": [
+        "my_app:prod"
+      ],
+      "target": "prod",
+      "cache-from": [
+        "type=docker"
+      ],
+      "output": [
+        "type=docker"
+      ]
+    }
+  }
+}

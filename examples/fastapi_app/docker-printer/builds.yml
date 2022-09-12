@@ -1,0 +1,5 @@
+- name: default
+  image: my_app
+  build_args:
+    cache-from: [type=docker]
+    output: [type=docker]

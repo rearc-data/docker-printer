@@ -1,0 +1,10 @@
+- name: dev
+  modules:
+    - base
+    - app-deps
+
+- name: prod
+  extends:
+    - dev
+  modules:
+    - app-code

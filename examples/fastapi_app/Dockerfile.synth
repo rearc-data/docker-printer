@@ -1,0 +1,29 @@
+# syntax = docker/dockerfile:1.2
+
+ARG PYTHON_VERSION=3.9
+ARG BASE_OS=slim
+
+FROM tiangolo/uvicorn-gunicorn-fastapi:python${PYTHON_VERSION}-${BASE_OS} AS base
+
+ENV APP_DIR="/app"
+
+RUN mkdir -p ${APP_DIR}
+WORKDIR ${APP_DIR}
+
+FROM base AS dev
+
+# Install Python dependencies
+# Requirement file: ./requirements.txt
+
+COPY ./requirements.txt ./requirements.txt
+
+RUN  \
+    pip install --no-cache-dir -r ./requirements.txt  && \
+    rm ./requirements.txt
+
+FROM dev AS prod
+
+# Add necessary source code into the image for production execution
+COPY ./app ${APP_DIR}
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

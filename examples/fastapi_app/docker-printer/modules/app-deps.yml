@@ -1,0 +1,10 @@
+name: app-deps
+priority: 70
+depends_on:
+  - base
+template:
+  file: pip-install.Dockerfile.jinja2
+  variables:
+    requirement_files:
+      - source: ./requirements.txt
+        destination: ./requirements.txt

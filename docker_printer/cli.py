@@ -1,4 +1,6 @@
 import subprocess
+import textwrap
+from pathlib import Path
 
 import click
 
@@ -61,8 +63,9 @@ def build(name):
 
 
 @cli.command()
-def init():
-    base_dir = config_dir(default_to_local=True)
+@click.argument("path", default=Path(), type=click.Path(exists=True, dir_okay=True))
+def init(path):
+    base_dir = path / "docker-printer"
     if base_dir.exists():
         click.echo(f"{base_dir} already exists, cannot initialize new project")
         raise click.Abort()
@@ -72,3 +75,10 @@ def init():
     (base_dir / "templates").mkdir(exist_ok=False, parents=False)
     (base_dir / "targets.yml.jinja2").touch(exist_ok=False)
     (base_dir / "builds.yml.jinja2").touch(exist_ok=False)
+    (base_dir / ".gitignore").write_text(
+        textwrap.dedent(
+            """
+            *.rendered.yml
+            """.lstrip()
+        )
+    )

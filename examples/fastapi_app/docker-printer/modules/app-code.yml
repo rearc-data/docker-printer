@@ -1,0 +1,11 @@
+name: app-code
+priority: -100
+depends_on:
+  - base
+template:
+  file: stage.Dockerfile.jinja2
+  variables:
+    instructions:
+      - "# Add necessary source code into the image for production execution"
+      - COPY ./app ${APP_DIR}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

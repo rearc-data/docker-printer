@@ -1,0 +1,19 @@
+{% extends "stage.Dockerfile.jinja2" %}
+
+{% block instructions -%}
+# Install Python dependencies
+{% for req in requirement_files -%}
+# Requirement file: {{ req['source'] }}
+{%- endfor %}
+{% if requirements -%}
+# Other requirements: {% for req in requirements -%}{{ req }}{{ ", " if not loop.last else "" }}{% endfor %}
+{% endif %}
+
+{% for req in requirement_files -%}
+COPY {{ req['source'] }} {{ req['destination'] }}
+{% endfor %}
+
+RUN {% if cache %}--mount=type=cache,target=/var/cache/pip{% endif %} \
+    pip install {% if cache %}--cache-dir /var/cache/pip{% else %}--no-cache-dir{% endif %} {% for req in requirement_files %}-r {{ req['destination'] }}{% endfor %} {% for req in requirements %}{{ req }}{{ " " if not loop.last else "" }}{% endfor %}{% for req in requirement_files %} && \
+    rm {{ req['destination'] }}{% endfor %}
+{% endblock %}
