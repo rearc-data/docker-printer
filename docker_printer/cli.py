@@ -4,9 +4,9 @@ from pathlib import Path
 
 import click
 
+from . import __version__
 from .models import TargetCollection, BuildConfigCollection
 from .utils import (
-    config_dir,
     jinja_env,
     yml_load,
     preload_modules,
@@ -17,6 +17,7 @@ from .utils import (
 
 
 @click.group()
+@click.version_option(__version__, message="%(version)s")
 def cli():
     pass
 
@@ -82,10 +83,3 @@ def init(path):
             """.lstrip()
         )
     )
-
-
-@cli.command()
-def version():
-    from . import __version__
-
-    print(__version__)
