@@ -1,11 +1,10 @@
 import getpass
 import platform
 from functools import lru_cache
+from importlib import resources
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import jinja2
-from importlib import resources
 import yaml
 from yaml.scanner import ScannerError
 
