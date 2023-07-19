@@ -58,9 +58,9 @@ def main():
         )
     )
 
-    from docker_printer.cli import cli
+    from docker_printer.cli import app
 
-    cli()
+    app()
 
 
 if __name__ == "__main__":

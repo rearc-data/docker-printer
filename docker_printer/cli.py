@@ -2,27 +2,39 @@ import subprocess
 import textwrap
 from pathlib import Path
 
-import click
+import typer
 
 from . import __version__
-from .models import TargetCollection, BuildConfigCollection
+from .models import BuildConfigCollection, TargetCollection
 from .utils import (
+    base_dir,
+    builds_file,
     jinja_env,
-    yml_load,
     preload_modules,
     targets_file,
-    builds_file,
-    base_dir,
+    yml_load,
 )
 
-
-@click.group()
-@click.version_option(__version__, message="%(version)s")
-def cli():
-    pass
+app = typer.Typer()
 
 
-@cli.command()
+def version_callback(value: bool):
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        None, "--version", callback=version_callback, is_eager=True
+    ),
+):
+    # Do other global stuff, handle other global options here
+    return
+
+
+@app.command()
 def synth():
     _synth()
 
@@ -36,7 +48,7 @@ def _synth():
     dockerfile = targets.render_dockerfile(jinja_env())
     dockerfile_path = base_dir() / "Dockerfile.synth"
 
-    click.echo(f"Saving to {dockerfile_path}")
+    typer.echo(f"Saving to {dockerfile_path}")
     with open(dockerfile_path, "w", newline="\n") as f:
         f.write(dockerfile)
 
@@ -45,31 +57,35 @@ def _synth():
         bakefile = build_config.generate_bakefile(targets)
         with open(bakefile_path, "w", newline="\n") as f:
             f.write(bakefile + "\n")
-        click.echo(build_config.build_command)
+        typer.echo(build_config.build_command)
 
     return targets, build_configs
 
 
-@cli.command()
-@click.argument("name")
-def build(name):
+@app.command()
+def build(name: str):
     _, build_configs = _synth()
 
     try:
         config = next(cfg for cfg in build_configs.__root__ if cfg.name == name)
     except StopIteration:
-        raise click.Abort(f"No build config found with name '{name}'")
+        raise typer.Abort(f"No build config found with name '{name}'")
 
     subprocess.run(config.build_command)
 
 
-@cli.command()
-@click.argument("path", default=Path(), type=click.Path(exists=True, dir_okay=True))
-def init(path):
+@app.command()
+def init(
+    path: Path = typer.Argument(
+        ...,
+        exists=True,
+        dir_okay=True,
+    )
+):
     base_dir = path / "docker-printer"
     if base_dir.exists():
-        click.echo(f"{base_dir} already exists, cannot initialize new project")
-        raise click.Abort()
+        typer.echo(f"{base_dir} already exists, cannot initialize new project")
+        raise typer.Abort()
 
     base_dir.mkdir(exist_ok=False, parents=False)
     (base_dir / "modules").mkdir(exist_ok=False, parents=False)

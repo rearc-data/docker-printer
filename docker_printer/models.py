@@ -1,10 +1,12 @@
 import json
 import re
 from collections import defaultdict
-from typing import List, Optional, Set, Dict, Any, Hashable, Union, Iterable
+from typing import Any, Dict, Hashable, Iterable, List, Optional, Set, Union
 
 import jinja2
-from pydantic import BaseModel, validator, PrivateAttr
+from pydantic import BaseModel, PrivateAttr, validator
+from rich import print
+from rich.tree import Tree
 
 
 class CommonListTree:
@@ -30,14 +32,14 @@ class CommonListTree:
                 lbl for child in self.children.values() for lbl in child.labels
             }
 
-        def print_tree(self, _indent=0):
+        def tree(self, tree=None) -> Tree:
             for value, child in self.children.items():
-                if child.terminal_labels:
-                    suffix = f' [{", ".join(child.terminal_labels)}]'
-                else:
-                    suffix = ""
-                print("  " * _indent + f"- {value}" + suffix)
-                child.print_tree(_indent + 1)
+                terminals = " ".join(
+                    f"[code]{lbl}[/code]" for lbl in child.terminal_labels
+                )
+                text = f"{value} {terminals}"
+                subtree = tree.add(text.strip())
+                child.tree(subtree)
 
         def visit(self, func):
             for value, child in self.children.items():
@@ -50,8 +52,10 @@ class CommonListTree:
     def merge_list(self, *args, **kwargs):
         self.root.merge_list(*args, **kwargs)
 
-    def print_tree(self):
-        self.root.print_tree()
+    def tree(self) -> Tree:
+        root = Tree("[dim]Dockerfile.synth[/dim]")
+        self.root.tree(root)
+        return root
 
     def visit(self, func):
         self.root.visit(func)
@@ -222,7 +226,7 @@ class TargetCollection(BaseModel):
         for target in targets:
             module_tree.merge_list(target.all_modules(), target.name)
 
-        module_tree.print_tree()
+        print(module_tree.tree())
         chunks: Dict[Union[CommonListTree.Node, str], str] = {}
         names = {}
         image_args = {}
