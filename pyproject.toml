@@ -1,7 +1,55 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=61.2",
     "build",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+version = "0.2.2"
+name = "docker-printer"
+description = "Composer for dockerfiles"
+authors = [
+    { name = "Rearc Data", email = "data@rearc.io" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "pyyaml",
+    "jinja2",
+    "click",
+    "pydantic",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "https://github.com/rearc-data/docker-printer"
+"Bug Tracker" = "https://github.com/rearc-data/docker-printer/issues"
+
+[project.scripts]
+docker-printer = "docker_printer.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [
+    ".",
+]
+namespaces = false
+
+[tool.setuptools.package-data]
+"docker_printer.resources" = [
+    "templates/*.jinja2",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=docker-printer --cov-report term-missing --cov-report html"
