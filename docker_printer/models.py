@@ -333,3 +333,7 @@ class BuildConfig(BaseModel):
 
 class BuildConfigCollection(BaseModel):
     __root__: List[BuildConfig]
+
+    @property
+    def configs(self):
+        return [t for t in self.__root__]

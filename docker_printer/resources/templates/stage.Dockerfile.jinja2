@@ -4,7 +4,7 @@ FROM {{ base }} AS {{ name }}
 
 {% block labels -%}
 {% for key, value in labels.items() -%}
-LABEL "{{ key }}"={{ value }}"
+LABEL "{{ key }}"="{{ value }}"
 {% endfor %}
 {%- endblock %}
 
@@ -19,6 +19,10 @@ ARG {{ arg }}{% if default %}={{ default }}{% endif %}
 ENV {{ key }}="{{ value }}"
 {% endfor %}
 {%- endblock %}
+
+{% if shell -%}
+SHELL {{ shell|tojson|safe }}
+{%- endif %}
 
 {% block instructions -%}
 {% for instr in instructions -%}

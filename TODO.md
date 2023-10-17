@@ -1,3 +1,6 @@
 - Add `setup` feature for modules
 - Add build profiles to control the generation of the bakefile(s)
-- Add duplicate name check to config file validation 
+- Add duplicate name check to config file validation
+- Upgrade to pydantic 2.x
+- Unit tests
+- Integration (CLI) tests

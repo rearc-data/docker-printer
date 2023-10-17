@@ -23,7 +23,7 @@ def version_callback(value: bool):
     if value:
         typer.echo(__version__)
         raise typer.Exit()
-    
+
 
 def base_dir_callback(value: str = None):
     # Change CWD to target so path resolution works as expected
@@ -64,12 +64,12 @@ def _synth():
     with open(dockerfile_path, "w", newline="\n") as f:
         f.write(dockerfile)
 
-    for build_config in build_configs.__root__:
+    for build_config in build_configs.configs:
         bakefile_path = base_dir() / f"docker-bake.{build_config.name}.json"
         bakefile = build_config.generate_bakefile(targets)
         with open(bakefile_path, "w", newline="\n") as f:
             f.write(bakefile + "\n")
-        # typer.echo(build_config.build_command)
+        typer.echo(build_config.build_command)
 
     return targets, build_configs
 
@@ -80,15 +80,18 @@ def build(name: str = "default"):
     _, build_configs = _synth()
 
     try:
-        config = next(cfg for cfg in build_configs.__root__ if cfg.name == name)
+        config = next(cfg for cfg in build_configs.configs if cfg.name == name)
     except StopIteration:
-        names = ", ".join(set([x.name for x in build_configs.__root__]))
-        typer.secho(f"Error: No build config found with name '{name}'", fg=typer.colors.RED)
+        names = ", ".join(set([x.name for x in build_configs.configs]))
+        typer.secho(
+            f"Error: No build config found with name '{name}'", fg=typer.colors.RED
+        )
         typer.secho(f"Valid names: {names}", fg=typer.colors.YELLOW)
         typer.Exit(1)
     else:
         typer.echo(config.build_command)
         subprocess.run(config.build_command, shell=True)
+
 
 @app.command()
 def show_config():
@@ -97,7 +100,7 @@ def show_config():
 
     target_config_file = targets_file()
     build_config_file = builds_file()
-    targets = TargetCollection.parse_obj(yml_load(target_config_file))
+    target_configs = TargetCollection.parse_obj(yml_load(target_config_file))
     build_configs = BuildConfigCollection.parse_obj(yml_load(build_config_file))
 
     typer.secho("Config files", bold=True, fg=typer.colors.GREEN)
@@ -105,11 +108,14 @@ def show_config():
     typer.echo(str(build_config_file))
 
     typer.secho("\nTargets", bold=True, fg=typer.colors.GREEN)
-    for target in targets.__root__:
-        typer.echo(target)
+    for target in target_configs.targets:
+        typer.echo(target.name)
+        for mod in target.all_modules():
+            typer.echo(f"  {mod.name}")
+        typer.echo()
 
     typer.secho("\nBuilds", bold=True, fg=typer.colors.GREEN)
-    for build_config in build_configs.__root__:
+    for build_config in build_configs.configs:
         typer.echo(f"{build_config.name} {build_config.image}")
 
 
@@ -124,7 +130,10 @@ def init(
     """Initializes a new project tree."""
     base_dir = path / "docker-printer"
     if base_dir.exists():
-        typer.secho(f"Error: {base_dir} already exists, cannot initialize new project", fg=typer.colors.RED)
+        typer.secho(
+            f"Error: {base_dir} already exists, cannot initialize new project",
+            fg=typer.colors.RED,
+        )
         typer.Exit(1)
 
     base_dir.mkdir(exist_ok=False, parents=False)
