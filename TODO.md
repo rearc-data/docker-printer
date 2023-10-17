@@ -1,2 +1,3 @@
 - Add `setup` feature for modules
 - Add build profiles to control the generation of the bakefile(s)
+- Add duplicate name check to config file validation 
