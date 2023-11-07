@@ -18,7 +18,7 @@ dependencies = [
     "pyyaml",
     "jinja2",
     "click",
-    "pydantic",
+    "pydantic==1.*",
     "typer",
     "rich"
 ]
