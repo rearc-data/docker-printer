@@ -20,3 +20,7 @@ docker-printer init
 See the [documentation](https://docker-printer.readthedocs.io/en/latest/#) for how to get started.
 
 There are also example docker constructs provided in the `/examples` folder.
+
+## Pydantic V2
+
+With the release of `docker-printer` 1.x, the tool now uses `pydantic==2.*`. If you require `pydantic==1.*`, please use `docker-printer==0.*`. New features will continue to be added to both version 0 and version 1 for the time being.
