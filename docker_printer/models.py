@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Set, Union
 
 import jinja2
-from pydantic import BaseModel, PrivateAttr, validator
+from pydantic import BaseModel, PrivateAttr, RootModel, field_validator
 from rich import print
 from rich.tree import Tree
 
@@ -91,7 +91,8 @@ class Module(BaseModel):
     def __hash__(self):
         return hash(self.name)
 
-    @validator("image_args", pre=True)
+    @field_validator("image_args", mode="before")
+    @classmethod
     def ensure_is_dictionary(cls, v):
         if isinstance(v, (list, tuple)):
             return {k: None for k in v}
@@ -199,12 +200,10 @@ class Target(BaseModel):
         return self.name
 
 
-class TargetCollection(BaseModel):
-    __root__: Set[Target]
-
+class TargetCollection(RootModel[Set[Target]]):
     @property
     def targets(self):
-        return [t for t in self.__root__ if not t.exclude]
+        return [t for t in self.root if not t.exclude]
 
     # def __getitem__(self, item: str) -> Target:
     #     try:
@@ -275,12 +274,13 @@ class TargetCollection(BaseModel):
 class BuildConfig(BaseModel):
     name: str
     image: List[str]
-    tag_prefix: Optional[str]
-    tag_postfix: Optional[str]
+    tag_prefix: Optional[str] = None
+    tag_postfix: Optional[str] = None
     build_args: Dict[str, Any] = {"load": True}
     limit_tags: List[str] = []
 
-    @validator("image", pre=True)
+    @field_validator("image", mode="before")
+    @classmethod
     def ensure_image_is_list(cls, v):
         if not isinstance(v, list):
             return [v]
@@ -331,9 +331,7 @@ class BuildConfig(BaseModel):
         return f"docker buildx bake -f docker-bake.{self.name}.json"
 
 
-class BuildConfigCollection(BaseModel):
-    __root__: List[BuildConfig]
-
+class BuildConfigCollection(RootModel[List[BuildConfig]]):
     @property
     def configs(self):
-        return [t for t in self.__root__]
+        return list(self.root)
