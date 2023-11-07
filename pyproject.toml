@@ -19,6 +19,8 @@ dependencies = [
     "jinja2",
     "click",
     "pydantic",
+    "typer",
+    "rich"
 ]
 
 [project.readme]
