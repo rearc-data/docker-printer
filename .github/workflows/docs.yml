@@ -4,15 +4,22 @@ on:
   - push
 
 jobs:
-  docs_build:
+  docs:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - uses: actions/checkout@v3
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r docs/requirements.txt
+    - run: cd docs && make html
 
-      - uses: actions/upload-artifact@v1
-        with:
-          name: DocumentationHTML
-          path: docs/_build/html/
+    - uses: actions/upload-artifact@v3
+      with:
+        name: DocumentationHTML
+        path: docs/build/html/
+        retention-days: 30
